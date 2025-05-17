@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -33,14 +33,7 @@ export default function GeneratePage() {
     setSelectedStyle(style);
   }, [router]);
 
-  useEffect(() => {
-    // Start generation when both photo and style are available
-    if (uploadedPhotoUrl && selectedStyle && generationStatus === 'idle') {
-      startGeneration();
-    }
-  }, [uploadedPhotoUrl, selectedStyle, generationStatus]);
-
-  const startGeneration = async () => {
+  const startGeneration = useCallback(async () => {
     setGenerationStatus('generating');
     
     // Create a progress simulation
@@ -89,7 +82,14 @@ export default function GeneratePage() {
       setGenerationStatus('error');
       toast.error("Failed to generate avatar. Please try again.");
     }
-  };
+  }, [uploadedPhotoUrl, selectedStyle]);
+
+  useEffect(() => {
+    // Start generation when both photo and style are available
+    if (uploadedPhotoUrl && selectedStyle && generationStatus === 'idle') {
+      startGeneration();
+    }
+  }, [uploadedPhotoUrl, selectedStyle, generationStatus, startGeneration]);
 
   const completeGeneration = (avatarUrl: string) => {
     // Set the generated avatar URL

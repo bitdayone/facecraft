@@ -69,7 +69,7 @@ export default function StylesPage() {
               <Card className="lg:col-span-1">
                 <CardHeader>
                   <CardTitle>Your Photo</CardTitle>
-                  <CardDescription>This is the photo we'll transform</CardDescription>
+                  <CardDescription>This is the photo we&apos;ll transform</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {uploadedPhotoUrl && (
