@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { put } from "@vercel/blob";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -53,8 +54,24 @@ export async function POST(request: NextRequest) {
       size: "1024x1024",
     });
 
-    // Get the generated image URL
-    const avatarUrl = generationResponse.data?.[0]?.url || photoUrl;
+    // Get the generated image URL from OpenAI
+    const openaiImageUrl = generationResponse.data?.[0]?.url;
+    
+    if (!openaiImageUrl) {
+      throw new Error("Failed to generate image with OpenAI");
+    }
+    
+    // Download the image from OpenAI
+    const imageResponse = await fetch(openaiImageUrl);
+    const imageBlob = await imageResponse.blob();
+    
+    // Upload to Vercel Blob Storage
+    const blob = await put(`facecraft-avatars/${Date.now()}-${style}.png`, imageBlob, {
+      access: 'public',
+    });
+    
+    // Use the Vercel Blob URL
+    const avatarUrl = blob.url;
 
     return NextResponse.json({
       success: true,
