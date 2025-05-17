@@ -45,7 +45,10 @@ FaceCraft is a web application that transforms your photos into stunning AI-gene
    Create a `.env.local` file in the root directory with the following variables:
    ```
    BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
+   OPENAI_API_KEY=your_openai_api_key
    ```
+
+   You can obtain an OpenAI API key by signing up at [OpenAI Platform](https://platform.openai.com/).
 
 4. Run the development server:
    ```bash
@@ -80,7 +83,7 @@ facecraft/
 ## API Endpoints
 
 - `POST /api/upload`: Uploads a photo to Vercel Blob Storage
-- `POST /api/generate`: Generates an avatar using the uploaded photo and selected style
+- `POST /api/generate`: Generates an avatar using OpenAI's GPT-4o and DALL-E 3 models
 
 ## Deployment
 
@@ -93,7 +96,7 @@ vercel deploy
 
 ## Future Enhancements
 
-- Integration with advanced AI image generation models
+- Additional AI model options for avatar generation
 - More avatar styles and customization options
 - User authentication and profile management
 - Gallery of previously generated avatars

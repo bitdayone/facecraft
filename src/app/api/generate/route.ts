@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
 
-// This is a mock implementation of the avatar generation API
-// In a real application, this would integrate with an AI service
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export async function POST(request: NextRequest) {
   try {
-    // Simulate server processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
     const { photoUrl, style } = await request.json();
     
     if (!photoUrl) {
@@ -23,14 +24,43 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // In a real implementation, we would call an AI service here
-    // For the demo, we'll just return the original photo URL
-    // In a production environment, this would be where we'd integrate with Replicate, OpenAI, or similar
+    // First, analyze the image with GPT-4o to understand the person's features
+    const visionResponse = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an AI assistant that helps describe people's facial features to create stylized avatars. Be detailed but concise."
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: `Describe this person's key facial features, so I can create a ${style} style avatar of them.` },
+            { type: "image_url", image_url: { url: photoUrl } }
+          ]
+        }
+      ]
+    });
+    
+    // Get the description of the person
+    const description = visionResponse.choices[0]?.message?.content || "";
+    
+    // Use DALL-E 3 to generate the stylized avatar based on the description
+    const generationResponse = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: `Create a ${style} style avatar portrait based on this description: ${description}. The avatar should maintain the likeness of the person while stylizing them in a ${style} aesthetic. The image should be a portrait-style avatar with a clean background.`,
+      n: 1,
+      size: "1024x1024",
+    });
+
+    // Get the generated image URL
+    const avatarUrl = generationResponse.data?.[0]?.url || photoUrl;
 
     return NextResponse.json({
       success: true,
-      avatarUrl: photoUrl, // In production, this would be the URL to the generated avatar
-      style: style,
+      avatarUrl,
+      style,
+      description,
     });
   } catch (error) {
     console.error("Error generating avatar:", error);
